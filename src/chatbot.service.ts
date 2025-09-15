@@ -1,4 +1,5 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
 import { Injectable } from '@nestjs/common';
 
@@ -8,12 +9,20 @@ export class ChatbotService {
     const model = new ChatOpenAI({
       model: 'gpt-4o-mini',
     });
-    const messages = [
-      new SystemMessage("Translate the following from English into Italian"),
-      new HumanMessage("hi!"),
-    ];
 
-    const result = await model.invoke(messages);
+    // Create a prompt template using system template and user input
+    const promptTemplate = ChatPromptTemplate.fromMessages([
+      ["system", "Translate the following from English into {language}"],
+      ["human", "{text}"]
+    ]);
+    
+    // Format the prompt with actual values
+    const formattedPrompt = await promptTemplate.formatMessages({
+      language: "Italian",
+      text: "hi!"
+    });
+
+    const result = await model.invoke(formattedPrompt);
     console.log(result);
   
     return result.content.toString();
